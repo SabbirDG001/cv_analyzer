@@ -16,9 +16,8 @@ services:
 
   backend:
     build: ./backend
+    # DATABASE_URL comes from backend/.env: local Postgres by default, Supabase when you switch.
     env_file: [./backend/.env]
-    environment:
-      DATABASE_URL: postgresql+psycopg://postgres:postgres@postgres:5432/skillbridge
     ports: ["8000:8000"]
     depends_on:
       postgres: { condition: service_healthy }

@@ -47,8 +47,20 @@ def _ensure_supabase_stubs() -> None:
         END
         $$;
         """)
-    op.execute("GRANT USAGE ON SCHEMA auth, public TO authenticated")
-    op.execute("GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated")
+    # Supabase already grants this; only plain Postgres needs it. Functions are executable
+    # by PUBLIC by default, so auth.uid() needs no grant of its own.
+    op.execute("""
+        DO $$
+        BEGIN
+          IF NOT has_schema_privilege('authenticated', 'auth', 'USAGE') THEN
+            GRANT USAGE ON SCHEMA auth TO authenticated;
+          END IF;
+          IF NOT has_schema_privilege('authenticated', 'public', 'USAGE') THEN
+            GRANT USAGE ON SCHEMA public TO authenticated;
+          END IF;
+        END
+        $$;
+        """)
 
 
 def _uuid_pk() -> sa.Column:
