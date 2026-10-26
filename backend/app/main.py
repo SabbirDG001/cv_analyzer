@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health
+from app.api import health, me, reference
+from app.core.auth import get_current_user
 from app.core.config import get_settings
 
 
@@ -15,6 +16,10 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(health.router)
+    # Every other router requires a verified Supabase JWT.
+    protected = [Depends(get_current_user)]
+    app.include_router(reference.router, dependencies=protected)
+    app.include_router(me.router, dependencies=protected)
     return app
 
 

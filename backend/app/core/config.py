@@ -10,7 +10,6 @@ class Settings(BaseSettings):
     frontend_origin: str = "http://localhost:3000"
     supabase_url: str = ""
     supabase_service_key: str = ""
-    supabase_jwt_secret: str = ""
     gemini_api_key: str = ""
     llm_model: str = ""
     youtube_api_key: str = ""
