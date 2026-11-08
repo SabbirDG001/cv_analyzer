@@ -1,7 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import health, me, reference
+from app.api import cv, health, me, reference
 from app.core.auth import get_current_user
 from app.core.config import get_settings
 
@@ -20,6 +20,7 @@ def create_app() -> FastAPI:
     protected = [Depends(get_current_user)]
     app.include_router(reference.router, dependencies=protected)
     app.include_router(me.router, dependencies=protected)
+    app.include_router(cv.router, dependencies=protected)
     return app
 
 
