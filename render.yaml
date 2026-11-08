@@ -1,0 +1,22 @@
+# Render Blueprint: backend API on the free plan. Frontend goes on Vercel (see DEPLOY.md).
+services:
+  - type: web
+    name: skillbridge-api
+    runtime: docker
+    plan: free
+    rootDir: backend
+    dockerfilePath: ./Dockerfile.prod
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL        # Supabase Session pooler URL, postgresql+psycopg:// prefix
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: FRONTEND_ORIGIN     # your Vercel URL, e.g. https://skillbridge.vercel.app
+        sync: false
