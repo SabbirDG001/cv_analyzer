@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { DeleteDataButton } from "@/components/delete-data-button";
 import { SignOutButton } from "@/components/sign-out-button";
 import { buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -75,10 +76,14 @@ export default function DashboardPage() {
             <Link href="/onboarding" className={buttonVariants({ variant: "outline" })}>
               {en.dashboard.editProfile}
             </Link>
-            <Link href="/skills" className={buttonVariants()}>
+            <Link href="/cv" className={buttonVariants()}>
+              {en.dashboard.uploadCv}
+            </Link>
+            <Link href="/skills" className={buttonVariants({ variant: "outline" })}>
               {en.dashboard.manageSkills}
             </Link>
           </div>
+          <DeleteDataButton />
         </CardContent>
       </Card>
       <p className="text-sm text-muted-foreground">{en.dashboard.comingSoon}</p>

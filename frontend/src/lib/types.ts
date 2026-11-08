@@ -38,3 +38,32 @@ export interface ProfileSkill {
   level: number;
   source: SkillSource;
 }
+
+export interface CvSkillMatch {
+  skill_id: number;
+  name: string;
+  level: number;
+  evidence: string;
+}
+
+export interface CvSkillUnmatched {
+  name: string;
+  level: number;
+  evidence: string;
+}
+
+export interface ParsedCv {
+  cgpa: number | null;
+  projects: { title: string; summary: string }[];
+  experience: { role: string; organization: string; summary: string }[];
+  languages: string[];
+  test_scores: { test: string; score: string }[];
+  interests: string[];
+}
+
+export interface CvReview {
+  cv_id: string;
+  parsed: ParsedCv;
+  matched: CvSkillMatch[];
+  unmatched: CvSkillUnmatched[];
+}

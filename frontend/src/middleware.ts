@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 
 import { supabaseConfig } from "@/lib/supabase/config";
 
-const PROTECTED_PREFIXES = ["/onboarding", "/skills", "/dashboard"];
+const PROTECTED_PREFIXES = ["/onboarding", "/skills", "/dashboard", "/cv"];
 const AUTH_PAGES = ["/login", "/signup"];
 
 function startsWithAny(pathname: string, prefixes: string[]): boolean {

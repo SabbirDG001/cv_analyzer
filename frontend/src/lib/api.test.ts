@@ -56,4 +56,29 @@ describe("apiFetch", () => {
     });
     await expect(apiFetch("/me/profile")).rejects.toBeInstanceOf(ApiError);
   });
+
+  it("exposes the machine-readable code from a coded error detail", async () => {
+    getSession.mockResolvedValue({ data: { session: null } });
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(JSON.stringify({ detail: { code: "no_text", message: "Scanned PDF" } }), {
+        status: 422,
+      }),
+    );
+    await expect(apiFetch("/me/cv", { method: "POST" })).rejects.toMatchObject({
+      status: 422,
+      code: "no_text",
+      message: "Scanned PDF",
+    });
+  });
+
+  it("lets the browser set the content type for multipart uploads", async () => {
+    getSession.mockResolvedValue({ data: { session: { access_token: "tok" } } });
+    const fetchMock = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(new Response("{}", { status: 200 }));
+    await apiFetch("/me/cv", { method: "POST", body: new FormData() });
+    const headers = new Headers(fetchMock.mock.calls[0][1]?.headers);
+    expect(headers.has("Content-Type")).toBe(false);
+    expect(headers.get("Authorization")).toBe("Bearer tok");
+  });
 });

@@ -11,6 +11,7 @@ export class ApiError extends Error {
   constructor(
     public readonly status: number,
     message: string,
+    public readonly code: string | null = null,
   ) {
     super(message);
     this.name = "ApiError";
@@ -27,10 +28,15 @@ export async function fetchHealth(): Promise<HealthResponse> {
   return (await res.json()) as HealthResponse;
 }
 
-export function buildHeaders(token: string | null, extra?: HeadersInit): Headers {
+export function buildHeaders(
+  token: string | null,
+  extra?: HeadersInit,
+  json: boolean = true,
+): Headers {
   const headers = new Headers(extra);
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  // Multipart bodies need the browser to set the Content-Type (with its boundary).
+  if (json && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
   return headers;
 }
 
@@ -41,14 +47,26 @@ async function accessToken(): Promise<string | null> {
   return data.session?.access_token ?? null;
 }
 
-async function errorMessage(res: Response): Promise<string> {
+interface ErrorInfo {
+  message: string;
+  code: string | null;
+}
+
+function isCodedDetail(detail: unknown): detail is { code: string; message: string } {
+  if (typeof detail !== "object" || detail === null) return false;
+  const d = detail as Record<string, unknown>;
+  return typeof d.code === "string" && typeof d.message === "string";
+}
+
+async function errorInfo(res: Response): Promise<ErrorInfo> {
   try {
     const body = (await res.json()) as { detail?: unknown };
-    if (typeof body.detail === "string") return body.detail;
+    if (typeof body.detail === "string") return { message: body.detail, code: null };
+    if (isCodedDetail(body.detail)) return { message: body.detail.message, code: body.detail.code };
   } catch {
     // fall through to the status text
   }
-  return res.statusText || `Request failed (${res.status})`;
+  return { message: res.statusText || `Request failed (${res.status})`, code: null };
 }
 
 /** Call the backend as the signed-in user. Resolves to undefined for 204 responses. */
@@ -56,10 +74,13 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const token = await accessToken();
   const res = await fetch(`${apiBaseUrl()}${path}`, {
     ...init,
-    headers: buildHeaders(token, init.headers),
+    headers: buildHeaders(token, init.headers, !(init.body instanceof FormData)),
     cache: "no-store",
   });
-  if (!res.ok) throw new ApiError(res.status, await errorMessage(res));
+  if (!res.ok) {
+    const info = await errorInfo(res);
+    throw new ApiError(res.status, info.message, info.code);
+  }
   if (res.status === 204) return undefined as T;
   return (await res.json()) as T;
 }
